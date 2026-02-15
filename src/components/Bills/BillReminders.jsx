@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Bell, Plus, Calendar, CheckCircle, XCircle, Trash2, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '../../utils/helpers';
 
-const BillReminders = ({ bills, setBills }) => {
+const BillReminders = ({ bills, setBills, onPayBill }) => {
     const [showModal, setShowModal] = useState(false);
     const [newBill, setNewBill] = useState({ name: '', amount: '', dueDate: '' });
 
@@ -14,7 +14,12 @@ const BillReminders = ({ bills, setBills }) => {
     };
 
     const togglePaid = (id) => {
-        setBills(bills.map(b => b.id === id ? { ...b, paid: !b.paid } : b));
+        const bill = bills.find(b => b.id === id);
+        if (bill && !bill.paid) {
+            onPayBill(bill);
+        } else {
+            setBills(bills.map(b => b.id === id ? { ...b, paid: !b.paid } : b));
+        }
     };
 
     const deleteBill = (id) => {

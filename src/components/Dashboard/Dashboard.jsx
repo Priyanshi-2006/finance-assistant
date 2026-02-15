@@ -54,8 +54,8 @@ const Dashboard = ({
                 <div className="stat-card">
                     <div className="stat-icon" style={{ background: '#3b82f620' }}><DollarSign style={{ color: '#3b82f6' }} /></div>
                     <div>
-                        <div className="stat-value">{stats.savingsRate}%</div>
-                        <div className="stat-label">Savings Rate • {formatCurrency(stats.balance)}</div>
+                        <div className="stat-value">{formatCurrency(stats.balance)}</div>
+                        <div className="stat-label">Balance • {stats.savingsRate}% Savings</div>
                     </div>
                 </div>
             </div>

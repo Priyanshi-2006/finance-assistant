@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, RefreshCw, Plus, X, Target } from 'lucide-react';
+import { CheckCircle, XCircle, RefreshCw, Plus, X, Target, AlertCircle } from 'lucide-react';
 import './App.css';
 import useLocalStorage from './hooks/useLocalStorage';
 import { formatCurrency } from './utils/helpers';
@@ -37,6 +37,10 @@ export default function App() {
     const [showAnalysisLoading, setShowAnalysisLoading] = useState(false);
     const [chatLoading, setChatLoading] = useState(false);
 
+    // Notification tracking
+    const notifiedBills = React.useRef(new Set());
+    const [activeNotification, setActiveNotification] = useState(null);
+
     // Forms
     const [expense, setExpense] = useState({ date: new Date().toISOString().split('T')[0], description: '', amount: '', type: 'debit', category: 'Other' });
     const [goal, setGoal] = useState({ name: '', targetAmount: '', deadline: '', emoji: '🎯' });
@@ -46,6 +50,26 @@ export default function App() {
         setToast({ msg, type });
         setTimeout(() => setToast(null), 3000);
     };
+
+    // Check for bills due tomorrow
+    useEffect(() => {
+        const checkBills = () => {
+            if (activeNotification) return; // Don't overwrite existing notification
+
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+            const billDue = bills.find(bill => !bill.paid && bill.dueDate === tomorrowStr && !notifiedBills.current.has(bill.id));
+
+            if (billDue) {
+                setActiveNotification(billDue);
+                notifiedBills.current.add(billDue.id);
+            }
+        };
+        checkBills();
+    }, [bills, activeNotification]);
 
     // Process recurring transactions
     useEffect(() => {
@@ -132,6 +156,22 @@ export default function App() {
     const deleteGoal = (id) => {
         setGoals(prev => prev.filter(g => g.id !== id));
         showToast('Goal deleted');
+    };
+
+    // Handle bill payment
+    const handlePayBill = (bill) => {
+        const newTransaction = {
+            id: Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            description: `Bill Payment: ${bill.name}`,
+            amount: -Math.abs(bill.amount),
+            type: 'debit',
+            category: 'Bills',
+            isRecurring: false
+        };
+        setTransactions(prev => [...prev, newTransaction]);
+        setBills(prev => prev.map(b => b.id === bill.id ? { ...b, paid: true } : b));
+        showToast(`Paid ${bill.name} successfully!`, 'success');
     };
 
     // AI API call helper
@@ -260,6 +300,36 @@ Return JSON with: {"personality": "Saver/Spender/Balanced", "topCategories": [{"
                 }}
             />
 
+            {/* Bill Notification Modal */}
+            {activeNotification && (
+                <div className="modal" style={{ zIndex: 11000 }}>
+                    <div className="modal-content notification-modal">
+                        <div className="icon-wrapper">
+                            <AlertCircle size={48} color="#ef4444" />
+                        </div>
+                        <h2>Bill Due Tomorrow!</h2>
+                        <p>{activeNotification.name} is due tomorrow ({formatCurrency(activeNotification.amount)}).</p>
+                        <div className="notification-actions">
+                            <button
+                                className="btn-secondary"
+                                onClick={() => setActiveNotification(null)}
+                            >
+                                Pay Later
+                            </button>
+                            <button
+                                className="btn-primary"
+                                onClick={() => {
+                                    handlePayBill(activeNotification);
+                                    setActiveNotification(null);
+                                }}
+                            >
+                                Pay Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Add Expense Modal */}
             {showExpense && (
                 <div className="modal" onClick={() => setShowExpense(false)}>
@@ -383,6 +453,7 @@ Return JSON with: {"personality": "Saver/Spender/Balanced", "topCategories": [{"
                 <BillReminders
                     bills={bills}
                     setBills={setBills}
+                    onPayBill={handlePayBill}
                 />
             )}
 
