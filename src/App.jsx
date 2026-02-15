@@ -39,8 +39,10 @@ export default function App() {
 
     // Notification tracking
     const notifiedBills = React.useRef(new Set());
+    const notifiedRecurring = React.useRef(new Set());
     const [activeNotification, setActiveNotification] = useState(null);
     const [budgetAlert, setBudgetAlert] = useState(null);
+    const [recurringAlert, setRecurringAlert] = useState(null);
 
     // Forms
     const [expense, setExpense] = useState({ date: new Date().toISOString().split('T')[0], description: '', amount: '', type: 'debit', category: 'Other' });
@@ -72,51 +74,22 @@ export default function App() {
         checkBills();
     }, [bills, activeNotification]);
 
-    // Process recurring transactions
+    // Check for recurring transactions due today
     useEffect(() => {
-        if (!recurring.length) return;
+        if (!recurring.length || recurringAlert) return;
 
-        const processRecurring = () => {
+        const checkRecurring = () => {
             const today = new Date().toISOString().split('T')[0];
-            let updatedRecurring = [...recurring];
-            let newTransactions = [];
-            let changed = false;
+            const dueItem = recurring.find(item => item.nextDueDate <= today && !notifiedRecurring.current.has(item.id));
 
-            updatedRecurring = updatedRecurring.map(item => {
-                if (item.nextDueDate <= today) {
-                    changed = true;
-                    // Add transaction
-                    newTransactions.push({
-                        id: Date.now() + Math.random(),
-                        date: item.nextDueDate,
-                        description: item.description,
-                        amount: item.type === 'debit' ? -Math.abs(item.amount) : Math.abs(item.amount),
-                        type: item.type,
-                        category: item.category,
-                        isRecurring: true
-                    });
-
-                    // Calculate next date
-                    const date = new Date(item.nextDueDate);
-                    if (item.frequency === 'daily') date.setDate(date.getDate() + 1);
-                    if (item.frequency === 'weekly') date.setDate(date.getDate() + 7);
-                    if (item.frequency === 'monthly') date.setMonth(date.getMonth() + 1);
-                    if (item.frequency === 'yearly') date.setFullYear(date.getFullYear() + 1);
-
-                    return { ...item, nextDueDate: date.toISOString().split('T')[0] };
-                }
-                return item;
-            });
-
-            if (changed) {
-                setRecurring(updatedRecurring);
-                setTransactions(prev => [...prev, ...newTransactions]);
-                showToast(`${newTransactions.length} recurring transactions processed`);
+            if (dueItem) {
+                setRecurringAlert(dueItem);
+                notifiedRecurring.current.add(dueItem.id);
             }
         };
 
-        processRecurring();
-    }, [recurring, setTransactions, setRecurring]);
+        checkRecurring();
+    }, [recurring, recurringAlert]);
 
     // Add expense
     const addExpense = async (e) => {
@@ -210,7 +183,49 @@ export default function App() {
         showToast(`Paid ${bill.name} successfully!`);
     };
 
-    // AI API call helper
+    // Handle recurring payment approval
+    const handlePayRecurring = (item) => {
+        const newTransaction = {
+            id: Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            description: `Recurring: ${item.description}`,
+            amount: item.type === 'debit' ? -Math.abs(item.amount) : Math.abs(item.amount),
+            type: item.type,
+            category: item.category,
+            isRecurring: true
+        };
+
+        const updatedTransactions = [...transactions, newTransaction];
+        setTransactions(updatedTransactions);
+
+        // Update next due date
+        const date = new Date(item.nextDueDate);
+        if (item.frequency === 'daily') date.setDate(date.getDate() + 1);
+        if (item.frequency === 'weekly') date.setDate(date.getDate() + 7);
+        if (item.frequency === 'monthly') date.setMonth(date.getMonth() + 1);
+        if (item.frequency === 'yearly') date.setFullYear(date.getFullYear() + 1);
+
+        setRecurring(prev => prev.map(r => r.id === item.id ? { ...r, nextDueDate: date.toISOString().split('T')[0] } : r));
+
+        // Budget Check
+        const budget = budgets.find(b => b.category === item.category);
+        if (budget) {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const spent = updatedTransactions
+                .filter(t => t.type === 'debit' && t.category === item.category && t.date.startsWith(currentMonth))
+                .reduce((s, t) => s + Math.abs(t.amount), 0);
+            const remaining = budget.limit - spent;
+
+            setBudgetAlert({
+                category: item.category,
+                remaining,
+                isOver: remaining < 0
+            });
+        }
+
+        showToast(`Paid ${item.description} successfully!`);
+        setRecurringAlert(null);
+    };
     const callAI = async (prompt, isChat = false) => {
         try {
             if (apiProvider === 'anthropic') {
@@ -365,6 +380,36 @@ Return JSON with: {"personality": "Saver/Spender/Balanced", "topCategories": [{"
                         >
                             OK
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Recurring Subscription Alert Modal */}
+            {recurringAlert && (
+                <div className="modal" style={{ zIndex: 11500 }}>
+                    <div className="modal-content notification-modal" style={{ borderTop: '6px solid var(--danger)' }}>
+                        <div className="icon-wrapper" style={{ background: '#fee2e2' }}>
+                            <RefreshCw size={48} color="#ef4444" />
+                        </div>
+                        <h2 style={{ color: 'var(--danger)' }}>Subscription Due!</h2>
+                        <p>
+                            <strong>{recurringAlert.description}</strong> is due today ({formatCurrency(recurringAlert.amount)}).
+                        </p>
+                        <div className="notification-actions">
+                            <button
+                                className="btn-secondary"
+                                onClick={() => setRecurringAlert(null)}
+                            >
+                                Pay Later
+                            </button>
+                            <button
+                                className="btn-primary"
+                                style={{ background: 'var(--danger)' }}
+                                onClick={() => handlePayRecurring(recurringAlert)}
+                            >
+                                Pay Now
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
