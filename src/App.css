@@ -22,6 +22,16 @@
   --shadow-lg: 0 20px 60px rgba(102, 126, 234, 0.3);
 }
 
+[data-theme='dark'] {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #f8fafc;
+  --text-light: #94a3b8;
+  --border: #334155;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -58,7 +68,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Toast */
@@ -78,14 +90,20 @@ body {
   animation: slideIn 0.3s ease;
 }
 
-.toast-success { border-left: 4px solid var(--success); }
-.toast-error { border-left: 4px solid var(--danger); }
+.toast-success {
+  border-left: 4px solid var(--success);
+}
+
+.toast-error {
+  border-left: 4px solid var(--danger);
+}
 
 @keyframes slideIn {
   from {
     transform: translateX(400px);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -158,7 +176,9 @@ body {
   color: var(--text);
 }
 
-.modal-body input, .modal-body select, .modal-body textarea {
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
   width: 100%;
   padding: 12px 16px;
   border: 2px solid var(--border);
@@ -168,15 +188,21 @@ body {
   background: var(--card);
 }
 
-.modal-body input:focus, .modal-body select:focus {
+.modal-body input:focus,
+.modal-body select:focus {
   outline: none;
   border-color: var(--primary-solid);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
@@ -184,6 +210,7 @@ body {
     transform: scale(0.9);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -286,6 +313,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -437,7 +465,10 @@ body {
 }
 
 /* Buttons */
-.btn-primary, .btn-secondary, .btn-link, .btn-icon {
+.btn-primary,
+.btn-secondary,
+.btn-link,
+.btn-icon {
   padding: 12px 24px;
   border-radius: 12px;
   font-weight: 600;
@@ -507,7 +538,8 @@ body {
 }
 
 /* Progress Bar */
-.progress-bar, .progress-bar-lg {
+.progress-bar,
+.progress-bar-lg {
   width: 100%;
   height: 8px;
   background: var(--border);
@@ -528,7 +560,8 @@ body {
 }
 
 /* Badge */
-.badge, .badge-lg {
+.badge,
+.badge-lg {
   display: inline-block;
   padding: 6px 12px;
   background: var(--primary);
@@ -553,8 +586,13 @@ body {
 }
 
 /* Icons */
-.icon-yellow { color: var(--warning); }
-.icon-green { color: var(--success); }
+.icon-yellow {
+  color: var(--warning);
+}
+
+.icon-green {
+  color: var(--success);
+}
 
 /* Transactions */
 .txn-list {
@@ -769,33 +807,33 @@ ul li::before {
   .nav {
     flex-direction: column;
   }
-  
+
   .nav-links {
     width: 100%;
     justify-content: stretch;
   }
-  
+
   .nav-links button {
     flex: 1;
     justify-content: center;
   }
-  
+
   .nav-links button span {
     display: none;
   }
-  
+
   .hero {
     padding: 32px 24px;
   }
-  
+
   .hero h1 {
     font-size: 28px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .chat-bubble {
     max-width: 85%;
   }
