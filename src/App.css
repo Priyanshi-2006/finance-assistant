@@ -739,6 +739,7 @@ body {
   padding: 12px 16px;
   border-radius: 16px;
   line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .chat-user .chat-bubble {
