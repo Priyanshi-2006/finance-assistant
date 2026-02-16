@@ -295,6 +295,16 @@ body {
   height: 20px;
 }
 
+.nav-links .logout-btn {
+  margin-top: auto;
+  color: var(--danger);
+}
+
+.nav-links .logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
 /* Main Content */
 .main {
   flex: 1;
