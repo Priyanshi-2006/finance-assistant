@@ -17,7 +17,15 @@ import BudgetManager from './components/Budget/BudgetManager';
 import RecurringManager from './components/Transactions/RecurringManager';
 import BillReminders from './components/Bills/BillReminders';
 
+import { useAuth } from './context/AuthContext';
+import Login from './components/Auth/Login';
+
 export default function App() {
+    const { user, loading } = useAuth();
+
+    if (loading) return null; // Or a loading spinner
+    if (!user) return <Login />;
+
     // State
     const [view, setView] = useLocalStorage('currentView', 'dashboard');
     const [transactions, setTransactions] = useLocalStorage('transactions', []);

@@ -1,7 +1,10 @@
 import React from 'react';
-import { Shield, PieChart, FileText, Sparkles, Target, MessageSquare, Settings, RefreshCw, Bell } from 'lucide-react';
+import { Shield, PieChart, FileText, Sparkles, Target, MessageSquare, Settings, RefreshCw, Bell, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Layout = ({ currentView, setView, setShowSettings, children }) => {
+    const { logout } = useAuth();
+
     return (
         <div className="app">
             {/* Navigation */}
@@ -30,6 +33,7 @@ const Layout = ({ currentView, setView, setShowSettings, children }) => {
                         </button>
                     ))}
                     <button onClick={() => setShowSettings(true)}><Settings /><span>Settings</span></button>
+                    <button onClick={logout} className="logout-btn"><LogOut /><span>Logout</span></button>
                 </div>
             </nav>
 
