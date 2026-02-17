@@ -778,6 +778,29 @@ body {
   padding: 12px 24px;
 }
 
+.chat-input .upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-light);
+}
+
+.chat-input .upload-btn:hover {
+  background: var(--border);
+  color: var(--primary-solid);
+  border-color: var(--primary-solid);
+}
+
+.chat-input input[type="file"] {
+  display: none;
+}
+
 /* Lists */
 ul {
   list-style: none;
@@ -882,3 +905,5 @@ ul li::before {
     max-width: 85%;
   }
 }
+.hover-card { transition: all 0.2s ease; border: 1px solid transparent; }
+.hover-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); background: white !important; }
